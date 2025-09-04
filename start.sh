@@ -41,7 +41,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     
     # Kiểm tra Qt dependencies
     missing_deps=()
-    if ! dpkg -l | grep -q libxcb-cursor0 2>/dev/null; then
+    if ! dpkg -l libxcb-cursor0 2>/dev/null | grep -q "^ii.*libxcb-cursor0"; then
         missing_deps+=("libxcb-cursor0")
     fi
     
