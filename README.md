@@ -19,6 +19,50 @@
 
 ## 🛡️ Tính Năng Bảo Mật
 
+```mermaid
+mindmap
+  root((🔐 E2EE Security))
+    🔑 Cryptography
+      X25519 ECDH
+        Curve25519
+        32-byte keys
+        Fast performance
+      AES-256-GCM
+        Authenticated encryption
+        96-bit nonce
+        128-bit auth tag
+      HKDF-SHA256
+        Key derivation
+        Salt + Info
+        Secure expansion
+    
+    🛡️ Security Properties
+      Confidentiality
+        Only endpoints decrypt
+        No plaintext in transit
+        Perfect Forward Secrecy
+      Authenticity
+        Message integrity
+        Sender verification
+        Anti-tampering
+      Privacy
+        No metadata leakage
+        Ephemeral keys
+        Local-only storage
+    
+    📚 Educational Features
+      Live E2EE Panel
+        Real-time crypto info
+        Public keys display
+        Nonce tracking
+        Ciphertext preview
+      Interactive Demo
+        Step-by-step process
+        Visual explanations
+        Hands-on learning
+        Technical details
+```
+
 ### 🔑 Mã Hóa Mạnh Mẽ
 - **X25519**: Elliptic Curve Diffie-Hellman key exchange
 - **AES-256-GCM**: Authenticated encryption với 256-bit key
@@ -77,6 +121,31 @@ python -m app.main
 
 ## 🎮 Hướng Dẫn Sử Dụng
 
+```mermaid
+journey
+    title User Journey: Sử dụng E2EE Chat
+    section Khởi Tạo
+        Chạy start.sh/start.bat: 5: User
+        Nhập tên hiển thị: 5: User
+        Click "MỞ CỬA SỔ CHAT": 5: User
+        Tạo thêm cửa sổ chat: 4: User
+    section Trò Chuyện
+        Chọn người nhận: 5: User
+        Nhập tin nhắn: 5: User
+        Tin nhắn được mã hóa: 5: System
+        Gửi ciphertext: 5: System
+        Nhận và giải mã: 5: System
+        Hiển thị tin nhắn: 5: User
+    section Theo Dõi E2EE
+        Xem E2EE Panel: 4: User
+        Đọc giải thích E2EE: 4: User
+        Thử demo tương tác: 3: User
+    section Lịch Sử
+        Tự động lưu chat: 5: System
+        Click mở lại chat cũ: 4: User
+        Xem avatar đa màu: 4: User
+```
+
 ### 1️⃣ Khởi Tạo Chat
 1. Mở ứng dụng → Nhập tên hiển thị
 2. Click **"MỞ CỬA SỔ CHAT"**
@@ -99,26 +168,75 @@ python -m app.main
 
 ## 📁 Cấu Trúc Dự Án
 
-```
-e2eee/
-├── 📂 app/                 # Mã nguồn chính
-│   ├── 🐍 main.py         # Entry point, thiết lập ứng dụng
-│   ├── 🔒 crypto.py       # Mô-đun mã hóa E2EE
-│   ├── 🚀 transport.py    # Broker chuyển tiếp tin nhắn
-│   ├── 🎨 ui.py           # Giao diện người dùng
-│   └── 📋 __init__.py     # Package initialization
-├── 📂 data/               # Lưu trữ lịch sử chat (HTML)
-├── 📋 require.txt         # Dependencies Python
-├── 🚀 start.sh           # Script khởi chạy Linux/macOS
-├── 🚀 start.bat          # Script khởi chạy Windows
-├── 📖 README.md          # Tài liệu này
-└── 📊 baocao.md          # Báo cáo kỹ thuật chi tiết
+```mermaid
+graph TD
+    A["📁 e2eee/"] --> B["📂 app/"]
+    A --> C["📂 data/"]
+    A --> D["📂 .venv/"]
+    A --> E["📋 require.txt<br/><small>Python Dependencies</small>"]
+    A --> F["🚀 start.sh<br/><small>Linux/macOS Launcher</small>"]
+    A --> G["🚀 start.bat<br/><small>Windows Launcher</small>"]
+    A --> H["📖 README.md<br/><small>Documentation</small>"]
+    A --> I["📊 baocao.md<br/><small>Technical Report</small>"]
+    
+    B --> B1["🐍 main.py<br/><small>Entry point, App setup</small>"]
+    B --> B2["🔒 crypto.py<br/><small>E2EE Implementation</small>"]
+    B --> B3["🚀 transport.py<br/><small>Message Broker</small>"]
+    B --> B4["🎨 ui.py<br/><small>GUI Components</small>"]
+    B --> B5["📋 __init__.py<br/><small>Package Init</small>"]
+    
+    C --> C1["📄 *.html<br/><small>Chat History Files</small>"]
+    D --> D1["📦 PySide6, cryptography<br/><small>Virtual Environment</small>"]
+    
+    style A fill:#e1f5fe
+    style B fill:#f3e5f5
+    style C fill:#e8f5e8
+    style D fill:#fff3e0
+    style E fill:#ffebee
+    style F fill:#e0f2f1
+    style G fill:#e0f2f1
+    style H fill:#f9fbe7
+    style I fill:#fce4ec
 ```
 
 ## 🔬 Chi Tiết Kỹ Thuật
 
 ### 🔐 Quy Trình E2EE
 
+```mermaid
+sequenceDiagram
+    participant Alice as "👤 Alice"
+    participant Broker as "📡 InMemoryBroker"
+    participant Bob as "👤 Bob"
+    
+    Note over Alice,Bob: 1️⃣ Key Generation Phase
+    Alice->>Alice: 🔑 Tạo X25519 KeyPair
+    Bob->>Bob: 🔑 Tạo X25519 KeyPair
+    
+    Note over Alice,Bob: 2️⃣ Key Exchange Phase
+    Alice->>Broker: 📤 Register + Public Key A
+    Bob->>Broker: 📤 Register + Public Key B
+    Broker->>Alice: 📥 Public Key B
+    Broker->>Bob: 📥 Public Key A
+    
+    Note over Alice,Bob: 3️⃣ Message Encryption Phase
+    Alice->>Alice: 🔐 ECDH: Shared Secret = Private_A × Public_B
+    Alice->>Alice: 🔧 HKDF-SHA256: AES Key từ Shared Secret
+    Alice->>Alice: 🛡️ AES-256-GCM: Encrypt("Xin chào Bob!")
+    
+    Note over Alice,Bob: 4️⃣ Message Transport Phase
+    Alice->>Broker: 📨 Send Ciphertext + Nonce
+    Broker->>Bob: 📨 Forward Ciphertext + Nonce
+    
+    Note over Alice,Bob: 5️⃣ Message Decryption Phase
+    Bob->>Bob: 🔐 ECDH: Shared Secret = Private_B × Public_A
+    Bob->>Bob: 🔧 HKDF-SHA256: AES Key từ Shared Secret
+    Bob->>Bob: 🔓 AES-256-GCM: Decrypt → "Xin chào Bob!"
+    
+    Note over Alice,Bob: ✅ End-to-End Encryption Complete!
+```
+
+**Chi tiết từng bước:**
 1. **Key Generation**: Mỗi client tạo cặp khóa X25519
 2. **Key Exchange**: Trao đổi public key qua broker
 3. **Shared Secret**: ECDH tạo shared secret
@@ -131,16 +249,45 @@ e2eee/
 
 ```mermaid
 graph TB
-    A[Client A] --> B[InMemoryBroker]
-    C[Client B] --> B
-    D[Client C] --> B
+    subgraph "E2EE Chat System"
+        subgraph "Client A"
+            A1["🔒 Crypto Module<br/>X25519 + AES-GCM"]
+            A2["🎨 UI Module<br/>Chat + E2EE Panel"]
+        end
+        
+        subgraph "Client B"
+            B1["🔒 Crypto Module<br/>X25519 + AES-GCM"]
+            B2["🎨 UI Module<br/>Chat + E2EE Panel"]
+        end
+        
+        subgraph "Client C"
+            C1["🔒 Crypto Module<br/>X25519 + AES-GCM"]
+            C2["🎨 UI Module<br/>Chat + E2EE Panel"]
+        end
+        
+        subgraph "InMemoryBroker"
+            D["📡 Message Routing<br/>🔑 Key Exchange<br/>👥 Client Management"]
+        end
+    end
     
-    B --> A
-    B --> C
-    B --> D
+    A1 <--> D
+    B1 <--> D
+    C1 <--> D
     
-    A -.->|Public Key Exchange| C
-    C -.->|Encrypted Messages| A
+    A2 --> A1
+    B2 --> B1
+    C2 --> C1
+    
+    A1 -.->|"🔑 Public Key Exchange"| B1
+    B1 -.->|"🔐 Encrypted Messages"| A1
+    
+    style A1 fill:#e3f2fd
+    style B1 fill:#e3f2fd
+    style C1 fill:#e3f2fd
+    style A2 fill:#f3e5f5
+    style B2 fill:#f3e5f5
+    style C2 fill:#f3e5f5
+    style D fill:#e8f5e8
 ```
 
 ### 📦 Dependencies

@@ -677,12 +677,11 @@ pie title "Memory Usage Distribution (5 clients + 100 messages)"
 
 #### 7.2.3. Scalability
 ```mermaid
-gitgraph
-    commit id: "1 Client - 25MB RAM"
-    commit id: "3 Clients - 40MB RAM"
-    commit id: "5 Clients - 60MB RAM"
-    commit id: "10 Clients - 110MB RAM"
-    commit id: "15 Clients - 170MB RAM (Limit)"
+xychart-beta
+    title "Memory Usage Scaling với Số Client"
+    x-axis [1, 3, 5, 10, 15]
+    y-axis "Memory (MB)" 0 --> 180
+    line [25, 40, 60, 110, 170]
 ```
 
 **Scalability metrics:**
