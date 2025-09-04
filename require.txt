@@ -1,6 +1,6 @@
 # Dependencies cho ứng dụng chat E2EE
 # PySide6: Framework GUI cho Python
-PySide6>=6.6,<6.8
+PySide6>=6.8
 
 # cryptography: Thư viện mã hoá cho X25519 và AES-GCM
 cryptography>=42,<44
