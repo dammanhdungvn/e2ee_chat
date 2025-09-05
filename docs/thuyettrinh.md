@@ -117,7 +117,7 @@ sequenceDiagram
     Broker->>Receiver: Chuyển ciphertext + nonce
 
     Receiver->>Receiver: Giải mã bằng AES key + nonce → plaintext
-
+```
 ---
 
 #### **Phần 5: Project Của Tôi - Tái Hiện Lại Toàn Bộ Câu Chuyện**
