@@ -215,7 +215,7 @@ class ClientWindow(QtWidgets.QMainWindow):
         peer_label = QtWidgets.QLabel("Gửi đến:")
         peer_label.setStyleSheet("QLabel { color: #65676b; font-size: 12px; }")
         self.peer_combo = QtWidgets.QComboBox()
-        self.peer_combo.setStyleSheet("QComboBox { background: #f0f2f5; border: none; border-radius: 8px; padding: 4px 8px; }")
+        self.peer_combo.setStyleSheet("QComboBox { background: #f0f2f5; border: 1px-solid #e4e6ea; border-radius: 8px; padding: 4px 8px; color: #1c1e21; }")
         header.addWidget(peer_label)
         header.addWidget(self.peer_combo)
         
@@ -255,7 +255,7 @@ class ClientWindow(QtWidgets.QMainWindow):
         # Ô nhập tin nhắn
         self.msg_edit = QtWidgets.QLineEdit()
         self.msg_edit.setPlaceholderText("Aa")
-        self.msg_edit.setStyleSheet("QLineEdit { background: #f0f2f5; border: none; border-radius: 20px; padding: 8px 16px; font-size: 14px; }")
+        self.msg_edit.setStyleSheet("QLineEdit { background: #f0f2f5; border: none; border-radius: 10px; padding: 8px 16px; font-size: 14px; }")
         self.msg_edit.returnPressed.connect(self._send_clicked)
         
         # Nút emoji
@@ -790,7 +790,7 @@ class Launcher(QtWidgets.QMainWindow):
         """)
         avatar.setFixedSize(50, 50)
         avatar.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        
+
         # Tên hiển thị với typography đẹp
         name_label = QtWidgets.QLabel(display_name)
         name_label.setStyleSheet("""
