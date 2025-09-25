@@ -12,7 +12,8 @@ REM Sử dụng: start.bat (double-click hoặc chạy từ cmd)
 REM Yêu cầu: Python 3.8+, pip
 
 setlocal ENABLEDELAYEDEXPANSION
-cd /d "%~dp0"
+REM Chuyển về thư mục gốc của dự án (parent directory của scripts/)
+cd /d "%~dp0.."
 
 REM Header đẹp với Unicode
 chcp 65001 >nul

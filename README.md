@@ -87,13 +87,13 @@ mindmap
 
 #### 🐧 Linux/macOS:
 ```bash
-chmod +x start.sh
-./start.sh
+chmod +x scripts/start.sh
+./scripts/start.sh
 ```
 
 #### 🪟 Windows:
 ```cmd
-start.bat
+scripts\start.bat
 ```
 
 Script tự động sẽ:
@@ -168,16 +168,23 @@ journey
 
 ## 📁 Cấu Trúc Dự Án
 
+### 🗂️ Tổ chức thư mục
+- **`app/`**: Source code chính của ứng dụng
+- **`data/`**: Lưu trữ lịch sử chat
+- **`documentation/`**: Tất cả tài liệu được tổ chức theo loại
+- **`scripts/`**: Script khởi chạy cho các hệ điều hành
+- **`.venv/`**: Virtual environment (tự động tạo)
+- **`require.txt`**: Danh sách dependencies Python
+
 ```mermaid
 graph TD
     A["📁 e2eee/"] --> B["📂 app/"]
     A --> C["📂 data/"]
     A --> D["📂 .venv/"]
-    A --> E["📋 require.txt<br/><small>Python Dependencies</small>"]
-    A --> F["🚀 start.sh<br/><small>Linux/macOS Launcher</small>"]
-    A --> G["🚀 start.bat<br/><small>Windows Launcher</small>"]
-    A --> H["📖 README.md<br/><small>Documentation</small>"]
-    A --> I["📊 baocao.md<br/><small>Technical Report</small>"]
+    A --> E["📂 documentation/"]
+    A --> F["📂 scripts/"]
+    A --> G["📋 require.txt<br/><small>Python Dependencies</small>"]
+    A --> H["📖 README.md<br/><small>Main Documentation</small>"]
     
     B --> B1["🐍 main.py<br/><small>Entry point, App setup</small>"]
     B --> B2["🔒 crypto.py<br/><small>E2EE Implementation</small>"]
@@ -188,15 +195,21 @@ graph TD
     C --> C1["📄 *.html<br/><small>Chat History Files</small>"]
     D --> D1["📦 PySide6, cryptography<br/><small>Virtual Environment</small>"]
     
+    E --> E1["📂 user-guide/<br/><small>User Documentation</small>"]
+    E --> E2["📂 technical/<br/><small>API & Changelog</small>"]
+    E --> E3["📂 academic/<br/><small>Reports & Presentations</small>"]
+    
+    F --> F1["🚀 start.sh<br/><small>Linux/macOS Launcher</small>"]
+    F --> F2["🚀 start.bat<br/><small>Windows Launcher</small>"]
+    
     style A fill:#e1f5fe
     style B fill:#f3e5f5
     style C fill:#e8f5e8
     style D fill:#fff3e0
-    style E fill:#ffebee
+    style E fill:#e8eaf6
     style F fill:#e0f2f1
-    style G fill:#e0f2f1
+    style G fill:#ffebee
     style H fill:#f9fbe7
-    style I fill:#fce4ec
 ```
 
 ## 🔬 Chi Tiết Kỹ Thuật
@@ -317,14 +330,30 @@ graph TB
 - **Avatar Đa Màu**: 26 màu khác nhau cho từng chữ cái
 - **Messenger-Style Bubbles**: Tin nhắn hiển thị như Facebook Messenger
 - **Responsive Design**: Tự động điều chỉnh kích thước
+- **Fullscreen Support**: Hoạt động mượt mà ở mọi kích thước cửa sổ
 
 ### ⚡ Hiệu Ứng Tương Tác
 - **Hover Effects**: Hiệu ứng khi di chuột
 - **Smooth Animations**: Chuyển tiếp mượt mà
-- **Resizable Panels**: Kéo thả panel E2EE
+- **Resizable Panels**: Kéo thả panel E2EE với splitter mượt mà
 - **Real-time Updates**: Cập nhật thông tin tức thì
+- **Event Filter**: Xử lý thông minh khi thay đổi kích thước cửa sổ
+
+### 🔍 Panel E2EE Nâng Cao
+- **Hiển thị đầy đủ**: Tất cả giá trị mã hóa hiển thị hoàn chỉnh
+- **Hash khóa bí mật**: 64 ký tự hex đầy đủ (thay vì cắt ngắn)
+- **Shared Secret**: 64 ký tự hex đầy đủ
+- **Ciphertext**: Toàn bộ bản mã (không bị cắt)
+- **AES Key**: 64 ký tự hex đầy đủ
+- **Nonce**: 24 ký tự hex đầy đủ
 
 ## 🛠️ Phát Triển
+
+### 📚 Code Documentation
+- **Docstring đầy đủ**: Tất cả module, class, và function đều có docstring tiếng Việt
+- **Type hints**: Sử dụng type annotations cho tất cả function
+- **Comment chi tiết**: Giải thích logic phức tạp bằng tiếng Việt
+- **Cấu trúc rõ ràng**: Code được tổ chức theo module chức năng
 
 ### 🧪 Chạy Tests
 ```bash
@@ -336,6 +365,18 @@ python -m pytest tests/
 ```bash
 # Chạy với debug logging
 PYTHONPATH=. python -m app.main --debug
+```
+
+### 📖 Đọc Code
+```bash
+# Xem docstring của module
+python -c "import app.crypto; help(app.crypto)"
+
+# Xem docstring của class
+python -c "from app.crypto import KeyPair; help(KeyPair)"
+
+# Xem docstring của function
+python -c "from app.crypto import derive_shared_key; help(derive_shared_key)"
 ```
 
 ### 📝 Đóng Góp
@@ -366,16 +407,3 @@ PYTHONPATH=. python -m app.main --debug
 - Mô tả chi tiết tính năng mong muốn
 - Giải thích use case cụ thể
 
-## 📄 License
-
-Dự án được phát hành dưới [MIT License](LICENSE). Bạn có thể tự do sử dụng, sửa đổi và phân phối.
-
----
-
-<div align="center">
-
-**🔐 Made with ❤️ for E2EE Education 🔐**
-
-[⭐ Star this repo](https://github.com/your-username/e2eee) • [🐛 Report Bug](https://github.com/your-username/e2eee/issues) • [✨ Request Feature](https://github.com/your-username/e2eee/issues)
-
-</div>

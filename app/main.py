@@ -1,9 +1,13 @@
 """
-Entry point chính cho ứng dụng chat E2EE
-- Khởi tạo QApplication
-- Thiết lập môi trường tiếng Việt
-- Tải font hỗ trợ tiếng Việt
-- Khởi chạy launcher
+Entry point chính cho ứng dụng chat E2EE.
+
+Thực hiện các tác vụ khởi tạo:
+- Khởi tạo QApplication với cấu hình phù hợp
+- Thiết lập môi trường tiếng Việt (locale, font)
+- Tải font tùy chỉnh từ thư mục fonts/
+- Khởi chạy giao diện launcher chính
+
+Hỗ trợ đa nền tảng: Windows, Linux, macOS
 """
 
 from __future__ import annotations

@@ -12,7 +12,8 @@
 # Yêu cầu: Python 3.8+, pip
 
 set -euo pipefail
-cd "$(dirname "$0")"
+# Chuyển về thư mục gốc của dự án (parent directory của scripts/)
+cd "$(dirname "$0")/.."
 
 # Màu sắc cho output
 RED='\033[0;31m'

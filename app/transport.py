@@ -1,8 +1,13 @@
 """
-Mô-đun transport cho ứng dụng chat E2EE
-- Quản lý broker trong bộ nhớ để chuyển tiếp tin nhắn
-- Đăng ký/hủy đăng ký client
+Mô-đun transport và message broker cho ứng dụng chat E2EE.
+
+Cung cấp hệ thống chuyển tiếp tin nhắn an toàn:
+- Quản lý broker trong bộ nhớ (InMemoryBroker)
+- Đăng ký/hủy đăng ký client với public key
 - Chuyển tiếp bản mã giữa các client
+- Singleton pattern để đảm bảo tính nhất quán
+
+Lưu ý: Broker chỉ chuyển tiếp bản mã, không thể giải mã tin nhắn.
 """
 
 from __future__ import annotations

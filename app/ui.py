@@ -1,9 +1,18 @@
 """
-Giao diện người dùng cho ứng dụng chat E2EE
-- Quản lý cửa sổ chat và launcher
+Giao diện người dùng (GUI) cho ứng dụng chat E2EE.
+
+Cung cấp giao diện hiện đại và thân thiện:
+- Quản lý cửa sổ chat và launcher chính
 - Hiển thị tin nhắn với bubble style Messenger
-- Panel E2EE thời gian thực
-- Lưu trữ lịch sử chat
+- Panel E2EE thời gian thực hiển thị quá trình mã hóa
+- Lưu trữ và khôi phục lịch sử chat
+- Responsive design với splitter có thể kéo thả
+
+Tính năng UI/UX:
+- Avatar đa màu cho từng người dùng
+- Gradient background và animation mượt mà
+- Fullscreen support với event filter thông minh
+- Real-time cập nhật thông tin mã hóa
 """
 
 from __future__ import annotations
@@ -48,7 +57,14 @@ class FadeLabel(QtWidgets.QLabel):
 
 @dataclass
 class Peer:
-    """Thông tin người dùng trong chat"""
+    """
+    Thông tin đối tác chat trong ứng dụng E2EE
+    
+    Attributes:
+        client_id (str): ID duy nhất của client đối tác
+        display_name (str): Tên hiển thị của đối tác
+        public_key_bytes (bytes): Khoá công khai X25519 của đối tác (32 bytes)
+    """
     client_id: str
     display_name: str
     public_key_bytes: bytes

@@ -1,9 +1,16 @@
 """
-Mô-đun mã hoá E2EE cho ứng dụng chat
-- Tạo cặp khoá X25519
-- Trao đổi khoá Diffie-Hellman
-- Mã hoá/giải mã AES-GCM
-- Sử dụng HKDF để tạo khoá AES từ shared secret
+Mô-đun mã hóa End-to-End Encryption (E2EE) cho ứng dụng chat.
+
+Cung cấp các chức năng mã hóa mạnh mẽ:
+- Tạo và quản lý cặp khóa X25519 (Curve25519)
+- Trao đổi khóa Diffie-Hellman (ECDH) an toàn
+- Mã hóa/giải mã tin nhắn bằng AES-256-GCM
+- Sử dụng HKDF-SHA256 để tạo khóa AES từ shared secret
+
+Bảo mật:
+- Perfect Forward Secrecy với ephemeral keys
+- Authenticated encryption với AES-GCM
+- Key derivation an toàn với HKDF
 """
 
 from __future__ import annotations
@@ -31,9 +38,20 @@ NONCE_BYTES = 12  # 96-bit nonce cho AES-GCM
 @dataclass
 class KeyPair:
     """
-    Cặp khoá X25519 cho mã hoá E2EE
-    - private_key: Khoá bí mật (không bao giờ chia sẻ)
-    - public_key: Khoá công khai (có thể chia sẻ an toàn)
+    Cặp khóa X25519 cho mã hóa E2EE.
+    
+    Sử dụng Curve25519 elliptic curve để tạo cặp khóa mạnh mẽ:
+    - private_key: Khóa bí mật (32 bytes) - KHÔNG BAO GIỜ chia sẻ
+    - public_key: Khóa công khai (32 bytes) - có thể chia sẻ an toàn
+    
+    Attributes:
+        private_key (X25519PrivateKey): Khóa bí mật để ký và giải mã
+        public_key (X25519PublicKey): Khóa công khai để xác thực và mã hóa
+    
+    Security:
+        - 128-bit security level
+        - Fast performance trên mọi platform
+        - Perfect Forward Secrecy khi sử dụng ephemeral keys
     """
     private_key: X25519PrivateKey
     public_key: X25519PublicKey
