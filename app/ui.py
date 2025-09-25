@@ -140,6 +140,9 @@ class ClientWindow(QtWidgets.QMainWindow):
         self._ensure_data_dir()
         self._load_history()
         self._refresh_peers()
+        
+        # Hiển thị thông tin khóa ban đầu (sau khi UI đã được setup)
+        self._show_initial_key_info()
 
         # Timer cập nhật danh sách đối tác định kỳ
         self._peer_timer = QtCore.QTimer(self)
@@ -287,13 +290,18 @@ class ClientWindow(QtWidgets.QMainWindow):
         right_title.setStyleSheet("QLabel { font-weight:600; color:#1976d2; font-size:14px; margin-bottom:12px; padding:8px; background:#e3f2fd; border-radius:6px; }")
         right_layout.addWidget(right_title)
         
-        # Các label hiển thị thông tin mã hoá
+        # Các label hiển thị thông tin mã hoá đầy đủ
         self.live_peer = QtWidgets.QLabel("Đối tác: -")
-        self.live_key = QtWidgets.QLabel("Băm khoá chung (SHA-256/8): -")
-        self.live_nonce = QtWidgets.QLabel("Nonce: -")
-        self.live_ct = QtWidgets.QLabel("Ciphertext: -")
+        self.live_my_private = QtWidgets.QLabel("🔐 Khóa bí mật của bạn (hex): -")
+        self.live_my_public = QtWidgets.QLabel("🔑 Khóa công khai của bạn (hex): -")
+        self.live_peer_public = QtWidgets.QLabel("🔑 Khóa công khai đối tác (hex): -")
+        self.live_shared_secret = QtWidgets.QLabel("🤝 Shared Secret (X25519 ECDH): -")
+        self.live_aes_key = QtWidgets.QLabel("🔐 AES Key (HKDF-SHA256): -")
+        self.live_nonce = QtWidgets.QLabel("🎲 Nonce (12 bytes): -")
+        self.live_ct = QtWidgets.QLabel("📦 Ciphertext (AES-GCM): -")
         
-        for w in [self.live_peer, self.live_key, self.live_nonce, self.live_ct]:
+        for w in [self.live_peer, self.live_my_private, self.live_my_public, self.live_peer_public, 
+                  self.live_shared_secret, self.live_aes_key, self.live_nonce, self.live_ct]:
             w.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
             w.setWordWrap(True)
             w.setMinimumHeight(60)  # Đặt chiều cao tối thiểu để có chỗ xuống dòng
@@ -330,7 +338,15 @@ class ClientWindow(QtWidgets.QMainWindow):
                 panel_width = int(total_width * 0.32)  # 32% cho E2EE panel
                 splitter.setSizes([chat_width, panel_width])
         
-        # Kết nối với sự kiện resize để cập nhật kích thước
+        # Kết nối với sự kiện resize để cập nhật kích thước khi thay đổi kích thước cửa sổ
+        def on_window_resize():
+            # Delay một chút để đảm bảo splitter đã được resize
+            QtCore.QTimer.singleShot(50, update_splitter_sizes)
+        
+        # Lưu reference đến update function để sử dụng trong resizeEvent
+        self._update_splitter_sizes = update_splitter_sizes
+        
+        # Kết nối với sự kiện splitter moved để lưu tỷ lệ
         splitter.splitterMoved.connect(lambda: None)  # Placeholder
         
         # Style cho splitter handle
@@ -355,6 +371,26 @@ class ClientWindow(QtWidgets.QMainWindow):
         
         # Gọi update_splitter_sizes sau khi widget được hiển thị
         QtCore.QTimer.singleShot(100, update_splitter_sizes)
+        
+        # Thêm event filter để xử lý fullscreen và resize
+        class SplitterEventFilter(QtCore.QObject):
+            def __init__(self, splitter, update_func):
+                super().__init__()
+                self.splitter = splitter
+                self.update_func = update_func
+                
+            def eventFilter(self, obj, event):
+                if event.type() == QtCore.QEvent.Type.WindowStateChange:
+                    # Khi thay đổi trạng thái cửa sổ (fullscreen, normal, etc.)
+                    QtCore.QTimer.singleShot(100, self.update_func)
+                elif event.type() == QtCore.QEvent.Type.Resize:
+                    # Khi resize cửa sổ
+                    QtCore.QTimer.singleShot(50, self.update_func)
+                return super().eventFilter(obj, event)
+        
+        # Áp dụng event filter
+        event_filter = SplitterEventFilter(splitter, update_splitter_sizes)
+        self.installEventFilter(event_filter)
 
         tabs.addTab(chat_tab, "Chat")
 
@@ -456,19 +492,60 @@ class ClientWindow(QtWidgets.QMainWindow):
         pub_hex = public_key_bytes(self.key_pair.public_key).hex()
         self.explain_text.setHtml(
             """
-            <h3>E2EE là gì?</h3>
-            <p>E2EE (mã hoá đầu-cuối) đảm bảo chỉ người gửi và người nhận mới đọc được nội dung. Hệ thống chuyển tiếp (broker) chỉ thấy bản mã.</p>
-            <h4>Các bước trong demo</h4>
+            <h2>🔐 End-to-End Encryption (E2EE) - Hành Trình Xây Dựng Chiếc Hộp Bí Mật</h2>
+            
+            <h3>📖 Câu chuyện "Lá thư và Ổ khóa":</h3>
+            <p>Hãy tưởng tượng bạn có một chiếc hộp. Bất cứ thứ gì bạn đặt vào trong, khóa lại và gửi đi, bạn có một lời đảm bảo tuyệt đối rằng <strong>chỉ có và chỉ có người bạn muốn</strong> mới có thể mở được nó.</p>
+            
+            <h3>🔄 Quy trình E2EE chi tiết:</h3>
             <ol>
-              <li>Mỗi người dùng tạo một cặp khoá X25519 khi mở ứng dụng.</li>
-              <li>Gửi tin: dùng <b>khoá bí mật của bạn</b> + <b>khoá công khai của người nhận</b> để tạo <i>mật chung</i> (X25519).</li>
-              <li>Dùng HKDF-SHA256 để sinh <b>khoá AES-256</b> từ mật chung.</li>
-              <li>Mã hoá tin nhắn bằng <b>AES-GCM</b> → sinh <i>nonce</i> và <i>ciphertext</i>.</li>
-              <li>Người nhận dùng <b>khoá bí mật của họ</b> + <b>khoá công khai của bạn</b> để tạo cùng mật chung → giải mã được.</li>
+            <li><strong>🔑 Key Generation (X25519):</strong> Mỗi người dùng tạo một cặp khóa:
+                <ul>
+                    <li>🔐 <strong>Private Key:</strong> Khóa bí mật, không bao giờ chia sẻ</li>
+                    <li>🔑 <strong>Public Key:</strong> Khóa công khai, có thể chia sẻ an toàn</li>
+                </ul>
+            </li>
+            <li><strong>🤝 Key Exchange:</strong> Trao đổi khóa công khai qua broker</li>
+            <li><strong>🔐 Shared Secret (ECDH):</strong> Tạo khóa chung bằng Elliptic Curve Diffie-Hellman:
+                <ul>
+                    <li>Alice: <code>shared_secret = private_key_A × public_key_B</code></li>
+                    <li>Bob: <code>shared_secret = private_key_B × public_key_A</code></li>
+                    <li>Kết quả: Cùng một shared secret!</li>
+                </ul>
+            </li>
+            <li><strong>🔐 Key Derivation (HKDF-SHA256):</strong> Tạo khóa AES từ shared secret:
+                <ul>
+                    <li>Salt: <code>"e2ee-mini-chat-hkdf-salt"</code></li>
+                    <li>Info: <code>"e2ee-mini-chat-session-key"</code></li>
+                    <li>Output: 32-byte AES-256 key</li>
+                </ul>
+            </li>
+            <li><strong>🔒 Encryption (AES-GCM):</strong> Mã hóa tin nhắn:
+                <ul>
+                    <li>Nonce: 12 bytes ngẫu nhiên</li>
+                    <li>Ciphertext: Tin nhắn đã mã hóa</li>
+                    <li>Auth Tag: Xác thực tính toàn vẹn</li>
+                </ul>
+            </li>
+            <li><strong>📦 Transmission:</strong> Gửi nonce + ciphertext qua broker</li>
+            <li><strong>🔓 Decryption:</strong> Người nhận giải mã bằng khóa riêng của họ</li>
             </ol>
-            <p><b>Khoá công khai của bạn (hex):</b></p>
-            <code style='display:block; background:#1a1a1a; padding:8px; border-radius:4px;'>%s</code>
-            <p><i>Lưu ý:</i> Khoá được tạo mới mỗi phiên; lịch sử chat được lưu, nhưng khoá <u>không</u> lưu.</p>
+            
+            <h3>🛡️ Bảo mật và Tính năng:</h3>
+            <ul>
+            <li><strong>🔐 Perfect Forward Secrecy:</strong> Mỗi phiên có khóa riêng biệt, khóa cũ bị xóa</li>
+            <li><strong>🔒 Authentication:</strong> AES-GCM đảm bảo tính toàn vẹn và xác thực</li>
+            <li><strong>🎲 Unique Nonce:</strong> Mỗi tin nhắn có nonce riêng, tránh replay attack</li>
+            <li><strong>⚡ Performance:</strong> X25519 nhanh hơn RSA, AES-GCM hiệu quả</li>
+            </ul>
+            
+            <h3>🔑 Thông tin khóa hiện tại:</h3>
+            <p><strong>Khoá công khai của bạn (hex):</strong></p>
+            <code style='display:block; background:#1a1a1a; color:#00ff00; padding:8px; border-radius:4px; font-family: monospace;'>%s</code>
+            <p><i>💡 Lưu ý:</i> Khoá được tạo mới mỗi phiên; lịch sử chat được lưu, nhưng khoá <u>không</u> lưu.</p>
+            
+            <h3>💡 Demo thực tế:</h3>
+            <p>Nhập tin nhắn mẫu bên dưới để xem quá trình mã hóa hoạt động như thế nào!</p>
             """ % pub_hex
         )
 
@@ -477,16 +554,66 @@ class ClientWindow(QtWidgets.QMainWindow):
         self.chat_view.append(_format_bubble(sender, text, outgoing))
 
     def _set_live_e2ee(self, peer_name: str, shared_key: bytes, nonce: bytes, ciphertext: bytes) -> None:
-        """Cập nhật panel E2EE thời gian thực với thông tin mã hoá"""
-        # Tạo hash ngắn của khoá chung để hiển thị
-        digest = hashes.Hash(hashes.SHA256())
-        digest.update(shared_key)
-        key_hash = digest.finalize().hex()[:16]
+        """Cập nhật panel E2EE thời gian thực với thông tin mã hoá đầy đủ"""
+        # Lấy thông tin peer hiện tại
+        peer = self._current_peer()
+        if peer is None:
+            return
+            
+        # Lấy public key của peer
+        peer_pub = X25519PublicKey.from_public_bytes(peer.public_key_bytes)
         
+        # Hiển thị thông tin đầy đủ
         self.live_peer.setText(f"Đối tác: {peer_name}")
-        self.live_key.setText(f"Băm khoá chung (SHA-256/8): {key_hash}")
-        self.live_nonce.setText(f"Nonce: {nonce.hex()}")
-        self.live_ct.setText(f"Ciphertext: {ciphertext.hex()}")
+        
+        # Khóa bí mật của mình (chỉ hiển thị hash để bảo mật)
+        my_private_hash = hashes.Hash(hashes.SHA256())
+        my_private_hash.update(self.key_pair.private_key.private_bytes_raw())
+        self.live_my_private.setText(f"🔐 Khóa bí mật của bạn (hash): {my_private_hash.finalize().hex()}")
+        
+        # Khóa công khai của mình
+        my_public_hex = public_key_bytes(self.key_pair.public_key).hex()
+        self.live_my_public.setText(f"🔑 Khóa công khai của bạn (hex): {my_public_hex}")
+        
+        # Khóa công khai của đối tác
+        peer_public_hex = peer.public_key_bytes.hex()
+        self.live_peer_public.setText(f"🔑 Khóa công khai đối tác (hex): {peer_public_hex}")
+        
+        # Shared secret từ ECDH
+        shared_secret = self.key_pair.private_key.exchange(peer_pub)
+        self.live_shared_secret.setText(f"🤝 Shared Secret (X25519 ECDH): {shared_secret.hex()}")
+        
+        # AES key từ HKDF
+        self.live_aes_key.setText(f"🔐 AES Key (HKDF-SHA256): {shared_key.hex()}")
+        
+        # Nonce và Ciphertext
+        self.live_nonce.setText(f"🎲 Nonce (12 bytes): {nonce.hex()}")
+        self.live_ct.setText(f"📦 Ciphertext (AES-GCM): {ciphertext.hex()}")
+
+    def _show_initial_key_info(self) -> None:
+        """Hiển thị thông tin khóa ban đầu khi khởi tạo client"""
+        # Hiển thị thông tin khóa của mình
+        my_public_hex = public_key_bytes(self.key_pair.public_key).hex()
+        
+        # Khóa bí mật (chỉ hiển thị hash để bảo mật)
+        my_private_hash = hashes.Hash(hashes.SHA256())
+        my_private_hash.update(self.key_pair.private_key.private_bytes_raw())
+        
+        self.live_peer.setText("Đối tác: Chưa chọn")
+        self.live_my_private.setText(f"🔐 Khóa bí mật của bạn (hash): {my_private_hash.finalize().hex()}")
+        self.live_my_public.setText(f"🔑 Khóa công khai của bạn (hex): {my_public_hex}")
+        self.live_peer_public.setText("🔑 Khóa công khai đối tác (hex): -")
+        self.live_shared_secret.setText("🤝 Shared Secret (X25519 ECDH): -")
+        self.live_aes_key.setText("🔐 AES Key (HKDF-SHA256): -")
+        self.live_nonce.setText("🎲 Nonce (12 bytes): -")
+        self.live_ct.setText("📦 Ciphertext (AES-GCM): -")
+
+    def resizeEvent(self, event):
+        """Override resizeEvent để cập nhật splitter khi thay đổi kích thước cửa sổ"""
+        super().resizeEvent(event)
+        # Delay một chút để đảm bảo splitter đã được resize
+        if hasattr(self, '_update_splitter_sizes'):
+            QtCore.QTimer.singleShot(50, self._update_splitter_sizes)
 
     def _current_peer(self) -> Optional[Peer]:
         """Lấy đối tác hiện tại được chọn"""

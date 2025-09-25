@@ -57,16 +57,15 @@ def _setup_vietnamese_environment(app: QtWidgets.QApplication) -> None:
     ]
     
     # Tìm font phù hợp nhất
-    fm = QtGui.QFontDatabase()
     chosen = None
     for family in preferred_fonts:
-        if family in fm.families():
+        if family in QtGui.QFontDatabase.families():
             chosen = family
             break
     
     # Nếu không tìm thấy font ưu tiên, chọn font đầu tiên có sẵn
-    if chosen is None and fm.families():
-        chosen = fm.families()[0]
+    if chosen is None and QtGui.QFontDatabase.families():
+        chosen = QtGui.QFontDatabase.families()[0]
     
     # Áp dụng font đã chọn
     if chosen:
