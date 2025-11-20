@@ -218,35 +218,39 @@ graph TD
 
 ```mermaid
 sequenceDiagram
-    participant Alice as "👤 Alice"
-    participant Broker as "📡 InMemoryBroker"
-    participant Bob as "👤 Bob"
+    participant A as Client A (Bạn)
+    participant S as Server
+    participant B as Client B (Đối tác)
+
+    Note over A,B: Pha 1: Sinh & trao đổi khóa công khai
+    A->>A: Generate PrivateKey_A, PublicKey_A
+    B->>B: Generate PrivateKey_B, PublicKey_B
+
+    A->>S: PublicKey_A
+    B->>S: PublicKey_B
+    S-->>A: PublicKey_B
+    S-->>B: PublicKey_A
+
+    Note over A,B: Pha 2: Tạo Shared Secret bằng ECDH
+    A->>A: SharedSecret_A = ECDH(PrivateKey_A, PublicKey_B)
+    B->>B: SharedSecret_B = ECDH(PrivateKey_B, PublicKey_A)
+    Note over A,B: => SharedSecret_A == SharedSecret_B
+
+
+
+    Note over A,B: Pha 3: Mã hóa AES Key bằng HKDF
+    A->>A: AESKey_A = HKDF(SHA256, SharedSecret_A)
+    B->>B: AESKey_B = HKDF(SHA256, SharedSecret_B)
+    Note over A,B: => AESKey_A == AESKey_B
     
-    Note over Alice,Bob: 1️⃣ Key Generation Phase
-    Alice->>Alice: 🔑 Tạo X25519 KeyPair
-    Bob->>Bob: 🔑 Tạo X25519 KeyPair
-    
-    Note over Alice,Bob: 2️⃣ Key Exchange Phase
-    Alice->>Broker: 📤 Register + Public Key A
-    Bob->>Broker: 📤 Register + Public Key B
-    Broker->>Alice: 📥 Public Key B
-    Broker->>Bob: 📥 Public Key A
-    
-    Note over Alice,Bob: 3️⃣ Message Encryption Phase
-    Alice->>Alice: 🔐 ECDH: Shared Secret = Private_A × Public_B
-    Alice->>Alice: 🔧 HKDF-SHA256: AES Key từ Shared Secret
-    Alice->>Alice: 🛡️ AES-256-GCM: Encrypt("Xin chào Bob!")
-    
-    Note over Alice,Bob: 4️⃣ Message Transport Phase
-    Alice->>Broker: 📨 Send Ciphertext + Nonce
-    Broker->>Bob: 📨 Forward Ciphertext + Nonce
-    
-    Note over Alice,Bob: 5️⃣ Message Decryption Phase
-    Bob->>Bob: 🔐 ECDH: Shared Secret = Private_B × Public_A
-    Bob->>Bob: 🔧 HKDF-SHA256: AES Key từ Shared Secret
-    Bob->>Bob: 🔓 AES-256-GCM: Decrypt → "Xin chào Bob!"
-    
-    Note over Alice,Bob: ✅ End-to-End Encryption Complete!
+    Note over A: Pha 4: Mã hóa bằng module AES-GCM
+    A->>A: Generate Nonce
+    A->>A: Ciphertext, AuthTag = AES-GCM-Encrypt(Plaintext, AESKey_A, Nonce)
+    A->>S: {Ciphertext, Nonce, AuthTag}
+    S-->>B: {Ciphertext, Nonce, AuthTag}
+
+    Note over B: Pha 5: Giải mã bằng AES-GCM
+    B->>B: Plaintext = AES-GCM-Decrypt(Ciphertext, AESKey_B, Nonce, AuthTag)
 ```
 
 **Chi tiết từng bước:**

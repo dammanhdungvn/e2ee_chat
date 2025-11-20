@@ -543,8 +543,8 @@ class ClientWindow(QtWidgets.QMainWindow):
                     <li>Auth Tag: Xác thực tính toàn vẹn</li>
                 </ul>
             </li>
-            <li><strong>📦 Transmission:</strong> Gửi nonce + ciphertext qua broker</li>
-            <li><strong>🔓 Decryption:</strong> Người nhận giải mã bằng khóa riêng của họ</li>
+            <li><strong>📦 Transmission:</strong> Gửi {nonce + ciphertext + auth_tag} qua broker</li>
+            <li><strong>🔓 Decryption:</strong> Người nhận giải mã bằng khóa riêng của họ </li>
             </ol>
             
             <h3>🛡️ Bảo mật và Tính năng:</h3>
